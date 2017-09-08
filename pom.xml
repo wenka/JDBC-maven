@@ -20,6 +20,8 @@
     </repositories>
 
     <dependencies>
+
+        <!-- mysql -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
@@ -45,5 +47,11 @@
             <version>2.1.0</version>
         </dependency>
 
+        <!-- test -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+        </dependency>
     </dependencies>
 </project>

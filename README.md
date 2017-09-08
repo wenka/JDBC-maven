@@ -37,3 +37,7 @@
     </dependency>
  </dependencies>
 ```
+
+2. jdbc
+
+PreparedStatement 下标从 1 开始。
