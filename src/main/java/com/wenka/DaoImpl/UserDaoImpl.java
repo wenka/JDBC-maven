@@ -3,8 +3,10 @@ package com.wenka.DaoImpl;
 import com.wenka.model.User;
 import com.wenka.dao.UserDao;
 import com.wenka.util.JDBCUtil;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.*;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -55,7 +57,49 @@ public class UserDaoImpl implements UserDao {
      * @return
      */
     public List<User> list(String param) {
-        return null;
+        List<User> users = new LinkedList<User>();
+
+        Connection connection = JDBCUtil.getConnection();
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+
+        String sql = "SELECT user.* FROM user WHERE 1=1";
+
+        param = StringUtils.trimToEmpty(param);
+
+        if (StringUtils.isNoneBlank(param)) {
+            sql += "\nAND username LIKE ?";
+        }
+
+        sql += "\nORDER BY create_time DESC,active DESC ";
+
+        try {
+            preparedStatement = connection.prepareStatement(sql);
+            if (StringUtils.isNoneBlank(param)) {
+                preparedStatement.setString(1, "%" + param + "%");
+            }
+
+            resultSet = preparedStatement.executeQuery();
+            User user = null;
+            while (resultSet.next()) {
+                user = new User();
+                user.setId(resultSet.getString("id"));
+                user.setStatus(resultSet.getInt("status"));
+                user.setActive(resultSet.getBoolean("active"));
+                user.setCreateTime(resultSet.getDate("create_time"));
+                user.setPassword(resultSet.getString("password"));
+                user.setUsername(resultSet.getString("username"));
+                users.add(user);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtil.close(resultSet, preparedStatement, connection);
+        }
+
+        return users.size() > 0 ? users : null;
+
     }
 
     /**
@@ -65,7 +109,25 @@ public class UserDaoImpl implements UserDao {
      * @return
      */
     public User delete(String id) {
-        return null;
+        User user = this.get(id);
+        Connection connection = JDBCUtil.getConnection();
+        PreparedStatement preparedStatement = null;
+
+        int resultColumn = 0;
+        try {
+            if (user != null) {
+                preparedStatement = connection.prepareStatement("DELETE FROM user WHERE id = ?");
+                preparedStatement.setString(1, id);
+                resultColumn = preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JDBCUtil.rollback();
+        } finally {
+            JDBCUtil.close(preparedStatement, connection);
+        }
+
+        return resultColumn == 1 ? user : null;
     }
 
     /**
@@ -106,6 +168,22 @@ public class UserDaoImpl implements UserDao {
      * @return
      */
     public User update(User user) {
-        return null;
+        Connection connection = JDBCUtil.getConnection();
+        PreparedStatement preparedStatement = null;
+
+        int resultCulumn = 0;
+        try {
+            preparedStatement = connection.prepareStatement("UPDATE user SET username=? WHERE id=?");
+            preparedStatement.setString(1, user.getUsername());
+            preparedStatement.setString(2, user.getId());
+            resultCulumn = preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JDBCUtil.rollback();
+        } finally {
+            JDBCUtil.close(preparedStatement, connection);
+        }
+
+        return resultCulumn == 1 ? user : null;
     }
 }

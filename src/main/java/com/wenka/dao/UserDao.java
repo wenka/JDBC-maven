@@ -18,7 +18,7 @@ public interface UserDao {
      * @param id
      * @return
      */
-    public User get(String id) throws SQLException;
+    public User get(String id);
 
     /**
      * 条件查询用户集合
